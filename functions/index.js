@@ -22,6 +22,7 @@ const config = {
 // const app = express();
 const firebase = require('firebase');
 firebase.initializeApp(config)
+const db =admin.firestore();
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 //
@@ -30,7 +31,7 @@ firebase.initializeApp(config)
 //   response.send("Hello from Firebase!");
 // });
 app.get('/posts',(req,res)=> {
-  admin.firestore().collection('posts').orderBy('createdAt','desc').get().then(data => {
+  db.collection('posts').orderBy('createdAt','desc').get().then(data => {
     let posts = [];
     data.for.Each(doc => {
         posts.push({
@@ -50,7 +51,7 @@ const newPost = { 
   userHandle: req.body.userHandle,
   cretedAt : new Date().toISOString()
 };
-admin.firestore().collection('posts')
+db.collection('posts')
 .add(newPost)
 .then((doc) => {
   res.json ({
@@ -81,14 +82,32 @@ app.post('signup',(req,res) =>{
 
 
 //validate date
-firebase.auth().createUserWithEmailAndPassword(newUser.email,newUser.password)
-.then((data) =>{
-  return res.status(201).json({message: `user${data.user.uid} signed up successfully`});
-  })
-.catch((err)=>{
+
+db.doc(`/users/${newUser.handle}`).get()
+.then(doc => {
+if(doc.exists) {
+  return res.status(400).json({handle: 'this handle is already taken'});
+}
+else{
+  return firebase.auth().createUserWithEmailAndPassword(newUser.email,newUser.password)
+}
+})
+.then(data =>{
+  return data.user.getIDToken()
+})
+.then(token =>{
+  return res.status(201).json({token});
+})
+.catch (err => {
   console.error(err);
-  return res.status(500).json({error: err.code});
-  });
+  if (err.code === 'auth/email-already-in-use'){
+    return res.status(400).json ({email : 'Email is already in use'})
+  }
+  else {
+    return res.status(500).json({error: err.code});
+  }
+})
+
 });
 
 
