@@ -33,7 +33,7 @@ const db =admin.firestore();
 app.get('/posts',(req,res)=> {
   db.collection('posts').orderBy('createdAt','desc').get().then(data => {
     let posts = [];
-    data.for.Each(doc => {
+    data.forEach(doc => {
         posts.push({
           postId:doc.id,
           body: doc.data().body,
