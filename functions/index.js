@@ -7,7 +7,6 @@ admin.initializeApp();
 
 
 
-
 const config = {
   apiKey: "AIzaSyAbD24uyELRcQSk4GNrmXjzgZAOCmDri5U",
   authDomain: "portal-74634.firebaseapp.com",
@@ -18,7 +17,6 @@ const config = {
   appId: "1:653730382236:web:4a5faa12de91690caa4859",
   measurementId: "G-2DPS61WTEF"
 };
-
 // const app = express();
 const firebase = require('firebase');
 firebase.initializeApp(config)
@@ -68,7 +66,6 @@ console.error(err);
 
 
 
-
 //signup
 app.post('signup',(req,res) =>{
   const newUser = {
@@ -80,9 +77,8 @@ app.post('signup',(req,res) =>{
 
 
 
-
 //validate date
-
+let token,userId;
 db.doc(`/users/${newUser.handle}`).get()
 .then(doc => {
 if(doc.exists) {
@@ -93,9 +89,21 @@ else{
 }
 })
 .then(data =>{
+  userId = data.user.uid;
   return data.user.getIDToken()
 })
-.then(token =>{
+.then(idToken =>{
+  token = idToken;
+  const userCredentials = {
+    handle: newUser.handle,
+    email: newUser.email,
+    createdAt: new Date().toISOString(),
+    userId
+  
+  };
+return db.doc(`/users/${newUser.handle}`).set(userCredentials);
+})
+.then(()=> {
   return res.status(201).json({token});
 })
 .catch (err => {
@@ -106,10 +114,8 @@ else{
   else {
     return res.status(500).json({error: err.code});
   }
-})
-
+}); 
 });
-
 
 
 
