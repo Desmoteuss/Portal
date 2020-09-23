@@ -84,13 +84,20 @@ app.post('signup',(req,res) =>{
 
 let errors = {};
 if(isEmpty(newUser.email)) {
-  errors.email = ' Email cannot be empty'
+  errors.email = ' cannot be empty'
 }
 else if (!isEmail(newUser.email)) { 
   error.email = " Provide valid email address "
 }
+if(isEmpty(newUser.password)) {
+  errors.password = ' cannot be empty'
+}
+if(newUser.password ~== newUser.confirmPassword) errors.confirmPassword = ' Password must match'
+if(isEmpty(newUser.handle)) {
+  errors.handle = ' cannot be empty'
+}
 
-
+if(Object.keys(errors).lenght > 0) return res.status(400).json(errors);
 //validate date
 let token,userId;
 db.doc(`/users/${newUser.handle}`).get()
