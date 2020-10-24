@@ -6,9 +6,9 @@ const { validateSignupDate } = require('../util/validators');
 firebase.initializeApp(config)
 
 
-const  { validateSignupDate, validateLoginDate } = require('../util/validators');
+const  { validateSignupDate, validateLoginDate, reduceUserDetails} = require('../util/validators');
 
-
+//sign in
 exports.signup =  (req,res) =>{
       const newUser = {
         email: req.body.email,
@@ -67,7 +67,7 @@ exports.signup =  (req,res) =>{
     
     }
 
-
+//login user
     exports.login = (req,res) =>{
         const user = {
           email : req.body.email,
@@ -97,7 +97,19 @@ exports.signup =  (req,res) =>{
         
           });
         };
+//user details
+exports.addUserDetails = (req, res) => {
+let userDetails = reduceUserDetails(req.body);
+db.doc(`/users/${req.user.handle}`).update(userDetails)
+.then(()=>{
 
+return res.json({message: 'Details added successfully'});
+})
+.catch(err => {
+  console.error(err);
+    return res.status(500).json({error:err.code});
+})
+}
 
 exports.uploadImage = (req,res ) => {
 const BusBoy = require('busboy');
